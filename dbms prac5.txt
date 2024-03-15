@@ -1,0 +1,63 @@
+(Aditya Pulikal / 22 / DSAI)
+Prac - 5: Replication and Sharding 
+
+Create a folder and in that folder itself make 9 folders with names as follows:- primary, secondary1, secondary2, server1, server2, server3, shard1, shard2, shard3.
+
+REPLICATION
+
+Open cmd for each of the steps and run the following commands:
+
+1) cd <folder_path>
+   cd C:\Users\Aditya\Documents\prac5
+
+2) start mongod --port=50000 --replSet="server1" --dbpath="<folder path>/<folder_name>"
+   start mongod --port=50000 --replSet="server1" --dbpath="C:\Users\Aditya\Documents\prac5\primary"
+   start mongod --port=50001 --replSet="server1" --dbpath="C:\Users\Aditya\Documents\prac5\secondary1"
+   start mongod --port=50002 --replSet="server1" --dbpath="C:\Users\Aditya\Documents\prac5\secondary2"
+
+3) mongosh --port=50000
+   rs.initiate({
+      _id:"server1",
+      members:[
+         {_id:0, host:"localhost:50000"},
+         {_id:1, host:"localhost:50001"},
+         {_id:2, host:"localhost:50002"}
+      ]
+   });
+
+4) cd C:\Users\Aditya\Documents\prac5
+   mongod --configsvr --port=1030 --replSet="server1" --dbpath="C:\Users\Aditya\Documents\prac5\server1"
+   mongod --configsvr --port=1040 --replSet="server1" --dbpath="C:\Users\Aditya\Documents\prac5\server2"
+   mongod --configsvr --port=1050 --replSet="Server1" --dbpath="C:\Users\Aditya\Documents\prac5\server3"
+
+5) mongosh --host="localhost:1030"
+   rs.initiate({
+       _id:"server1",
+       configsvr:true,
+       members:[
+          {_id:0, host:"localhost:1030"},
+          {_id:1, host:"localhost:1040"},
+          {_id:2, host:"localhost:1050"}
+       ]
+   })
+
+
+SHARDING
+
+Open cmd for each of the steps and run the following commands:
+
+1) cd C:\Users\Aditya\Documents\prac5
+
+2) mongod --shardsvr --port=1130 --dbpath="C:\Users\Aditya\Documents\prac5\shard1" --replSet="server1"
+   mongod --shardsvr --port=1140 --dbpath="C:\Users\Aditya\Documents\prac5\shard2" --replSet="server1"
+   mongod --shardsvr --port=1150 --dbpath="C:\Users\Aditya\Documents\prac5\shard3" --replSet="server1"
+
+3) mongosh --host="localhost:1130"
+   rs.initiate({
+       _id:"server1",
+       members: [
+          {_id: 0, host: "localhost:1130"},
+          {_id: 1, host: "localhost:1140"},
+          {_id: 2, host: "localhost:1150"}
+       ]
+   })
